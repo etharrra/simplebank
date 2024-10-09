@@ -21,14 +21,14 @@ func NewStore(db *sql.DB) *Store {
 }
 
 /**
- * Executes a transaction with the provided function using the given context. 
- * If an error occurs during the transaction or the function execution, it rolls back the transaction and returns the error. 
+ * Executes a transaction with the provided function using the given context.
+ * If an error occurs during the transaction or the function execution, it rolls back the transaction and returns the error.
  * Otherwise, it commits the transaction.
- * 
+ *
  * @param ctx The context for the transaction
  * @param fn The function to be executed within the transaction
  * @return An error if any occurred during the transaction or function execution
-*/
+ */
 func (store *Store) execTr(ctx context.Context, fn func(*Queries) error) error {
 	tx, err := store.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -152,5 +152,5 @@ func addMoney(
 	if err != nil {
 		return
 	}
-	retur
+	return
 }
