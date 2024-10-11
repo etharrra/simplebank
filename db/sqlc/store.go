@@ -7,14 +7,20 @@ import (
 )
 
 // Store provides all functions to create db quries and transactions
-type Store struct {
+type Store interface {
+	Querier
+	TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error)
+}
+
+// SQLStore provides all functions to create SQL quries and transactions
+type SQLStore struct {
 	*Queries
 	db *sql.DB
 }
 
 // NewStore creates a new  Store
-func NewStore(db *sql.DB) *Store {
-	return &Store{
+func NewStore(db *sql.DB) *SQLStore {
+	return &SQLStore{
 		db:      db,
 		Queries: New(db),
 	}
@@ -29,7 +35,7 @@ func NewStore(db *sql.DB) *Store {
  * @param fn The function to be executed within the transaction
  * @return An error if any occurred during the transaction or function execution
  */
-func (store *Store) execTr(ctx context.Context, fn func(*Queries) error) error {
+func (store *SQLStore) execTr(ctx context.Context, fn func(*Queries) error) error {
 	tx, err := store.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -74,7 +80,7 @@ type TransferTxResult struct {
  * @return TransferTxResult The result of the transfer transaction
  * @return error An error if the transaction encounters any issues
  */
-func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
+func (store *SQLStore) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
 	var result TransferTxResult
 
 	err := store.execTr(ctx, func(q *Queries) error {
@@ -107,7 +113,7 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 		} else {
 			result.ToAccount, result.FromAccount, err = addMoney(ctx, q, arg.ToAccountID, arg.Amount, arg.FromAccountID, -arg.Amount)
 		}
-		return nil
+		return err
 	})
 
 	return result, err

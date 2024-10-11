@@ -7,7 +7,7 @@ import (
 
 // Server serves all http requests for banking services
 type Server struct {
-	store  *db.Store
+	store  db.Store
 	router *gin.Engine
 }
 
@@ -17,7 +17,7 @@ type Server struct {
  * @param store The db.Store instance to be used by the server.
  * @return A pointer to the newly created Server instance.
  */
-func NewServer(store *db.Store) *Server {
+func NewServer(store db.Store) *Server {
 	server := &Server{store: store}
 	router := gin.Default()
 

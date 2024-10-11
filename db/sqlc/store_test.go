@@ -8,6 +8,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+/**
+ * TestTransferTx tests the transfer transaction functionality
+ * by simulating concurrent transfer transactions between two accounts.
+ * It creates random accounts, initiates multiple transfer transactions concurrently,
+ * and validates the results including transfers, entries, and account balances.
+ */
 func TestTransferTx(t *testing.T) {
 	store := NewStore(testDB)
 
