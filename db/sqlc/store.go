@@ -79,6 +79,24 @@ type TransferTxResult struct {
  * @param arg The TransferTxParams containing the necessary parameters for the transfer
  * @return TransferTxResult The result of the transfer transaction
  * @return error An error if the transaction encounters any issues
+ *
+ * Example:
+ * Let’s consider two concurrent transactions:
+ *
+ * Transaction A: Transfer $100 from Account 1 to Account 2.
+ * Transaction B: Transfer $200 from Account 2 to Account 1.
+ *
+ * Without Deadlock Prevention:
+ * Transaction A locks Account 1.
+ * Transaction B locks Account 2.
+ * Transaction A tries to lock Account 2 but is blocked because Transaction B has already locked it.
+ * Transaction B tries to lock Account 1 but is blocked because Transaction A has already locked it.
+ * This results in a deadlock.
+ *
+ * With Deadlock Prevention:
+ * Transaction A checks if FromAccountID (1) is less than ToAccountID (2). Since it is, it locks Account 1 first and then Account 2.
+ * Transaction B checks if FromAccountID (2) is less than ToAccountID (1). Since it is not, it locks Account 1 first and then Account 2.
+ * Even though both transactions are trying to transfer money between the same accounts, they will always lock the accounts in the same order (first Account 1, then Account 2), preventing the deadlock.
  */
 func (store *SQLStore) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
 	var result TransferTxResult
@@ -86,7 +104,7 @@ func (store *SQLStore) TransferTx(ctx context.Context, arg TransferTxParams) (Tr
 	err := store.execTr(ctx, func(q *Queries) error {
 		var err error
 
-		// use arg in CrateTransferParams cuz fields in arg and CrateTransferParams are identical
+		// use arg in CreateTransferParams cuz fields in arg and CrateTransferParams are identical
 		result.Transfer, err = q.CreateTransfer(ctx, CreateTransferParams(arg))
 		if err != nil {
 			return err
